@@ -1,7 +1,7 @@
-$ScriptPath = Join-Path $PSScriptRoot "bashed_notifer.ps1"
+$ScriptPath = Join-Path $PSScriptRoot "bashed_notifier.ps1"
 
 if (-not (Test-Path $ScriptPath)) {
-    Write-Host "Couldn't finished bashed_notifer.ps1 in $PPScriptRoot" -ForegroundColor Red
+    Write-Host "Couldn't finished bashed_notifier.ps1 in $PPScriptRoot" -ForegroundColor Red
     exit 1
 }
 
@@ -13,7 +13,7 @@ $atSeven = New-ScheduledTaskTrigger -Daily -At "19:00"
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
 
 
-Register-ScheduledTask -TaskName "BasheDisplayNotifer" `
+Register-ScheduledTask -TaskName "BasheDisplayNotifier" `
     -Trigger @($onLogon, $atSeven) `
     -Action $action `
     -Settings $settings `
@@ -21,4 +21,4 @@ Register-ScheduledTask -TaskName "BasheDisplayNotifer" `
     -Force | Out-Null
 
 
-Write-Host "Task 'BashedDailyNotifer' registered" -ForegroundColor Green
+Write-Host "Task 'BashedDailyNotifier' registered" -ForegroundColor Green

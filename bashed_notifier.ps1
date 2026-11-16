@@ -1,13 +1,13 @@
 # prevent multiple instances running at the same time
 
 $isNew = $false
-$mutex = New-Object System.Threading.Mutex($true, "Global\BashedNotiferMute", [ref]$isNew)
+$mutex = New-Object System.Threading.Mutex($true, "Global\BashedNotifierMute", [ref]$isNew)
 
 if (-not $isNew) { exit }
 
 
 try {
-        [Windows.UI.Notifications.ToolsNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
     [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 
     # default powershell app id so windows lets us push toast notifications
@@ -20,9 +20,9 @@ try {
         $xml = @"
 <toast>
     <visual>
-        <binding template = "ToastGeneric">
-            <text>$t<text>
-            <text>$b<text>
+        <binding template="ToastGeneric">
+            <text>$t</text>
+            <text>$b</text>
         </binding>
     </visual>
 </toast>
@@ -34,8 +34,9 @@ try {
         [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($appId).Show($toast)
     }
 
-    $desktp = [Environment]::GetFolderPath('Desktop')
-    $taskPath = Join-Path $env:LOCALAPPDATA "bashed"
+    $desktop = [Environment]::GetFolderPath('Desktop')
+    $tasksPath = Join-Path $desktop "tasks.txt"
+    $dataDir = Join-Path $env:LOCALAPPDATA "bashed"
     if (-not (Test-Path $dataDir)) {
         New-Item -ItemType Directory -Path $dataDir -Force | Out-Null
     }
@@ -55,7 +56,8 @@ try {
             $saved = Get-Content $statePath -Raw -Encoding UTF8 | ConvertFrom-Json
             if ($saved.tasksSentOn) { $state.tasksSentOn = $saved.tasksSentOn }
             if ($saved.reminderSentOn) { $state.reminderSentOn = $saved.reminderSentOn }
-        } catch {}
+        }
+        catch {}
     }
 
     $now = Get-Date
@@ -65,24 +67,26 @@ try {
 
     # daily task chech
     if ($state.tasksSentOn -ne $today) {
-        if (-not (Test-Path $taskPath)) {
-            Set-Content -Path $taskPath -Value "- test bashed script" -Encoding UTF8
-            Show-Notification "tasks.txt created" "Made a new tasks-txt on your desktop with a sample task"
-        } else {
-            $tasks = @(Get-Content $taskPath -Encoding UTF8 | Where-Object {$_.Trim() -ne ""})
+        if (-not (Test-Path $tasksPath)) {
+            Set-Content -Path $tasksPath -Value "- test bashed script" -Encoding UTF8
+            Show-Notification "tasks.txt created" "Made a new tasks.txt on your desktop with a sample task."
+        }
+        else {
+            $tasks = @(Get-Content $tasksPath -Encoding UTF8 | Where-Object { $_.Trim() -ne "" })
             if ($tasks.Count -eq 0) {
                 Show-Notification "Daily tasks" "nothing in tasks.txt today"
-            } else {
-                $summary = ($tasks | Select-Object -First 4 | ForEach-Object {"- $($_.Trom())"}) -join "`n"
+            }
+            else {
+                $summary = ($tasks | Select-Object -First 4 | ForEach-Object { "- $($_.Trim())" }) -join "`n"
                 if ($tasks.Count -gt 4) {
-                    $summary += "`n + $($tasks.Cout - 4) more..."
+                    $summary += "`n+ $($tasks.Count - 4) more..."
                 }
                 Show-Notification "Today's tasks ($($tasks.Count))" $summary
             }
         }
 
         $state.tasksSentOn = $today
-        $stae | ConvertTo-Json | Set-Content $statePath -Encoding UTF8
+        $state | ConvertTo-Json | Set-Content $statePath -Encoding UTF8
         $justSentTasks = $true
     }
 
