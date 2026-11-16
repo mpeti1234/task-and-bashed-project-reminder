@@ -33,3 +33,19 @@ reset today's notificationi state if you want to test it agin on tge some day:
 Remove the schedueled task:
 
     Unregister-ScheduledTask -TaskName "BashedDailyNotifier" -Confirem:$false
+
+
+
+## Screenshots
+
+*Notification*
+![Notification](screanshots/screanshot_1.png)
+
+*tasks.txt*
+![tasks.txt](screanshots/screanshot_2.png)
+
+*Bashed Reminder*
+![Bashed Reminder](screanshots/screanshot_3.png)
+
+*Task Scheduler*
+![Task Scheduler](screanshots/screanshot_4.png)
